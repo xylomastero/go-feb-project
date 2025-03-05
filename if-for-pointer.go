@@ -8,9 +8,7 @@ func incrementByTen(num *int) {
 
 func ExampleIfForPointer() {
 	numbers := []int{1, 2, 3, 4, 5}
-
-	defer fmt.Println("Example finished!")
-
+	fmt.Println("Original numbers:", numbers)
 	for i, num := range numbers {
 		if num%2 == 0 {
 			fmt.Printf("%d is even\n", num)
