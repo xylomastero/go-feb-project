@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"main/api/db"
 	"main/api/models"
@@ -33,13 +34,18 @@ func HandleCar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
-func GetCars(w http.ResponseWriter, r *http.Request) {
+func GetCars(w http.ResponseWriter, _ *http.Request) {
 	rows, err := db.DB.Query("SELECT id, make, model, year FROM cars")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			return
+		}
+	}(rows)
 
 	var cars []models.Car
 	for rows.Next() {
@@ -51,7 +57,10 @@ func GetCars(w http.ResponseWriter, r *http.Request) {
 		cars = append(cars, car)
 	}
 
-	json.NewEncoder(w).Encode(cars)
+	err = json.NewEncoder(w).Encode(cars)
+	if err != nil {
+		return
+	}
 }
 
 func AddCar(w http.ResponseWriter, r *http.Request) {
@@ -71,10 +80,13 @@ func AddCar(w http.ResponseWriter, r *http.Request) {
 	car.ID = int(id)
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(car)
+	err = json.NewEncoder(w).Encode(car)
+	if err != nil {
+		return
+	}
 }
 
-func GetCar(w http.ResponseWriter, r *http.Request, id string) {
+func GetCar(w http.ResponseWriter, _ *http.Request, id string) {
 	carID, _ := strconv.Atoi(id)
 	var car models.Car
 	err := db.DB.QueryRow("SELECT id, make, model, year FROM cars WHERE id = ?", carID).Scan(&car.ID, &car.Make, &car.Model, &car.Year)
@@ -83,7 +95,10 @@ func GetCar(w http.ResponseWriter, r *http.Request, id string) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(car)
+	err = json.NewEncoder(w).Encode(car)
+	if err != nil {
+		return
+	}
 }
 
 func UpdateCar(w http.ResponseWriter, r *http.Request, id string) {
@@ -101,10 +116,13 @@ func UpdateCar(w http.ResponseWriter, r *http.Request, id string) {
 	}
 
 	car.ID = carID
-	json.NewEncoder(w).Encode(car)
+	err = json.NewEncoder(w).Encode(car)
+	if err != nil {
+		return
+	}
 }
 
-func DeleteCar(w http.ResponseWriter, r *http.Request, id string) {
+func DeleteCar(w http.ResponseWriter, _ *http.Request, id string) {
 	carID, _ := strconv.Atoi(id)
 	_, err := db.DB.Exec("DELETE FROM cars WHERE id = ?", carID)
 	if err != nil {

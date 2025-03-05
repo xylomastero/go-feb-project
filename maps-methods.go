@@ -10,10 +10,10 @@ type Car struct {
 	Year  int
 }
 
-func (c Car) DisplayInfo() {
+func (c *Car) DisplayInfo() {
 	fmt.Printf("This is a %d %s %s.\n", c.Year, c.Make, c.Model)
 }
-func (c *Car) UpdateYear(newYear int) {
+func (c Car) UpdateYear(newYear int) {
 	c.Year = newYear
 }
 func printCarOwners(carOwners map[string]string) {

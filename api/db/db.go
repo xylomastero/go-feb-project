@@ -25,6 +25,9 @@ func Initialize() error {
 
 func Close() {
 	if DB != nil {
-		DB.Close()
+		err := DB.Close()
+		if err != nil {
+			return
+		}
 	}
 }
